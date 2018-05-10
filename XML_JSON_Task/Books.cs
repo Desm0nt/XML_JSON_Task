@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,88 +26,68 @@ namespace XML_JSON_Task
 
         public void SaveToXML(string path)
         {
-
+            using (XmlWriter writer = XmlWriter.Create(path, new XmlWriterSettings() { Indent = true }))
+            {
+                writer.WriteStartDocument();
+                writer.WriteStartElement("books");
+                foreach (var b in Book)
+                {
+                    writer.WriteStartElement("book");
+                    writer.WriteAttributeString("bookname", b.Bookname);
+                    writer.WriteStartElement("bookinfo");
+                    writer.WriteElementString("afirstname", b.AFirstName);
+                    writer.WriteElementString("alastname", b.ALastName);
+                    writer.WriteElementString("pagecount", b.PageCount.ToString());
+                    writer.WriteElementString("publishyear", b.PublishYear.ToString());
+                    writer.WriteEndElement();
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
+                writer.Flush();
+                writer.WriteEndDocument();
+            }
         }
 
         public void ReadFromXML(string path)
         {
-            string Data = File.ReadAllText(path);
-            using (StringReader stringReader = new StringReader(Data))
+            XmlDocument xdc = new XmlDocument();
+            xdc.Load(path);
+            XmlNodeList xnlNodes = xdc.GetElementsByTagName("book");
+
+            foreach (XmlNode xnlNode in xnlNodes)
             {
-                using (XmlReader xmlReader = XmlReader.Create(stringReader,
-                    new XmlReaderSettings() { IgnoreWhitespace = true }))
-                {
-                    xmlReader.MoveToContent();
-                    xmlReader.ReadStartElement("Books");
+                XmlElement element = (XmlElement)xnlNode;
 
-                    string Bookname = xmlReader.GetAttribute("Bookname");
-
-                    Console.WriteLine("Book: {0} ", Bookname);
-                    xmlReader.ReadStartElement("Book");
-
-                    Console.WriteLine("Bookinfo");
-
-                    while (xmlReader.Read())
-                    {
-                        if (xmlReader.IsStartElement())
-                        {
-                            //return only when you have START tag
-                            switch (xmlReader.Name.ToString())
-                            {
-                                case "AFirstName":
-                                    Console.WriteLine("Name of the Element is : " + xmlReader.ReadString());
-                                    break;
-                                case "ALastName":
-                                    Console.WriteLine("Your Location is : " + xmlReader.ReadString());
-                                    break;
-                                case "PageCount":
-                                    Console.WriteLine("Your Locatiodsdsn is : " + xmlReader.ReadString());
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("________________");
-                        }
-                    }
-                    //string AFname = xmlReader.ReadString();
-                    //string ALname = xmlReader.ReadString();
-
-                    //Console.WriteLine("Email address: {0}", AFname);
-                }
+                string Bookname = Convert.ToString(xnlNode.Attributes["bookname"].Value);
+                string AFirstName = element.GetElementsByTagName("afirstname")[0].ChildNodes[0].InnerText;
+                string ALastName = element.GetElementsByTagName("alastname")[0].ChildNodes[0].InnerText;
+                string PageCount = element.GetElementsByTagName("pagecount")[0].ChildNodes[0].InnerText;
+                string PublishYear = element.GetElementsByTagName("publishyear")[0].ChildNodes[0].InnerText;
+                Console.WriteLine("Book's name: " + Bookname + "\nAuthor: " + AFirstName + " " + ALastName + "\nPage count: " + PageCount + "\nPublish year: " + PublishYear + "\n");
             }
-            //    using (XmlReader reader = XmlReader.Create(path))
-            //    {
-            //        while (reader.Read())
-            //        {
-            //            if (reader.IsStartElement())
 
-            //            {
-            //                //return only when you have START tag
-            //                switch (reader.Name.ToString())
-            //                {
-            //                    case "Name":
-            //                        Console.WriteLine("Name of the Element is : " + reader.ReadString());
-            //                        break;
-            //                    case "Location":
-            //                        Console.WriteLine("Your Location is : " + reader.ReadString());
-            //                        break;
-            //                }
-            //            }
-            //            Console.WriteLine("");
-
-            //        }
-            //    }
             Console.Read();
         }
 
         public void SaveToJSON(string path)
         {
-
+            string json = JsonConvert.SerializeObject(Book, Newtonsoft.Json.Formatting.Indented);
+            File.WriteAllText(path, json);      
         }
 
         public void ReadFromJSON(string path)
         {
+            string json = File.ReadAllText(path);
+            List<Book> rBook = JsonConvert.DeserializeObject<List<Book>>(json);
+            foreach (var b in rBook)
+            {
+                string Bookname = b.Bookname;
+                string AFirstName = b.AFirstName;
+                string ALastName = b.ALastName;
+                string PageCount = b.PageCount.ToString();
+                string PublishYear = b.PublishYear.ToString();
+                Console.WriteLine("Book's name: " + Bookname + "\nAuthor: " + AFirstName + " " + ALastName + "\nPage count: " + PageCount + "\nPublish year: " + PublishYear + "\n");
+            }
 
         }
     }
