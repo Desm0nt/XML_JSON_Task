@@ -10,6 +10,8 @@ namespace XML_JSON_Task
     {
         static void Main(string[] args)
         {
+            Books a = new Books();
+            a.ReadFromXML(@"e:\\IBA\\Projects\\XML_JSON_Task\\XML_JSON_Task\\bin\\Debug\\a.xml");
         }
     }
 }
