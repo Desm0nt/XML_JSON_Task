@@ -10,11 +10,11 @@ using System.Xml;
 
 namespace XML_JSON_Task
 {
-    public class Books
+    public class BooksWorker
     {
         List<Book> Book;
 
-        public Books()
+        public BooksWorker()
         {
             Book = new List<Book>();
         }
